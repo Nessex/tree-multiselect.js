@@ -49,7 +49,8 @@
       showSectionOnSelected: true,
       sortable: false,
       startCollapsed: false,
-      includeParentValue: false
+      includeParentValue: false,
+      hideNoTitle: false
     };
     return $.extend({}, defaults, options);
   }
@@ -107,16 +108,18 @@
       insertOption(path, option);
     });
 
-    fillSelections($selectionContainer, data);
+    fillSelections($selectionContainer, data, options);
   }
 
   var sectionData = null; //Sorry
-  function fillSelections($selectionContainer, data) {
+  function fillSelections($selectionContainer, data, options) {
     function createSection($sectionContainer, title, sectionData) {
       var section = document.createElement('div');
       section.className = "section";
     
       var value = null;
+
+      var hideNoTitle = (typeof options === 'object' && options.hideNoTitle);
 
       if (sectionData)
         sectionData.map(function(data) {
@@ -131,6 +134,9 @@
 
       if (value !== null)
         sectionTitle.setAttribute('data-value', value);
+
+      if (hideNoTitle && title === '')
+        section.style.display = 'none';
 
       $(section).append(sectionTitle);
       $sectionContainer.append(section);
@@ -150,7 +156,9 @@
         'data-description': description,
         'data-index': index
       });
+      
       $itemContainer.append(selection);
+
       return selection;
     }
 
@@ -166,6 +174,7 @@
           sectionData = data[key];
         }
       });
+
       for (var key in data) {
         if (!data.hasOwnProperty(key)) continue;
         var $section = $(createSection($selectionContainer, key, sectionData));
