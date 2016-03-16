@@ -48,7 +48,8 @@
       sectionDelimiter: '/',
       showSectionOnSelected: true,
       sortable: false,
-      startCollapsed: false
+      startCollapsed: false,
+      includeParentValue: false
     };
     return $.extend({}, defaults, options);
   }
@@ -109,14 +110,27 @@
     fillSelections($selectionContainer, data);
   }
 
+  var sectionData = null; //Sorry
   function fillSelections($selectionContainer, data) {
-    function createSection($sectionContainer, title) {
+    function createSection($sectionContainer, title, sectionData) {
       var section = document.createElement('div');
       section.className = "section";
+    
+      var value = null;
+
+      if (sectionData)
+        sectionData.map(function(data) {
+          if (data && data.text === title) {
+            value = data.value;
+          }
+        });
 
       var sectionTitle = document.createElement('div');
       sectionTitle.className = "title";
       sectionTitle.innerHTML = title;
+
+      if (value !== null)
+        sectionTitle.setAttribute('data-value', value);
 
       $(section).append(sectionTitle);
       $sectionContainer.append(section);
@@ -147,9 +161,14 @@
         fillSelections($selectionContainer, data[i]);
       }
     } else {
+      Object.keys(data).forEach(function(key) {
+        if (key === '') {
+          sectionData = data[key];
+        }
+      });
       for (var key in data) {
         if (!data.hasOwnProperty(key)) continue;
-        var $section = $(createSection($selectionContainer, key));
+        var $section = $(createSection($selectionContainer, key, sectionData));
         fillSelections($section, data[key]);
       }
     }
@@ -371,9 +390,18 @@
 
     function updateOriginalSelect() {
       var selected = [];
+
       $selectedContainer.find("div.item").each(function() {
         selected.push($(this).attr('data-value'));
       });
+
+      if (options.includeParentValue) {
+        $selectionContainer.find('div.title').each(function() {
+          if ($(this).find('input[type=checkbox]').is(':checked')) {
+            selected.push($(this).attr('data-value'));
+          }
+        });
+      }
 
       $originalSelect.val(selected).change();
 
