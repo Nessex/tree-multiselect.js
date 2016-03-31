@@ -49,6 +49,7 @@
       showSectionOnSelected: true,
       sortable: false,
       startCollapsed: false,
+      collapseOnePerLevel: false,
       includeParentValue: false,
       hideNoTitle: false
     };
@@ -316,11 +317,18 @@
 
     $("span.collapse-section").unbind().click(function(e) {
       e.stopPropagation();
+
       var $collapseSection = $(this);
       var indicator = $collapseSection.text();
       $collapseSection.text(indicator ==  hideIndicator ? expandIndicator : hideIndicator);
       var $title = $collapseSection.parent();
       $title.siblings().toggle();
+
+      if (options.collapseOnePerLevel) {
+        $title.parent().siblings().children('.item').hide();
+
+        $title.parent().siblings().children('.title').children('.collapse-section').text(expandIndicator);
+      }
     });
 
     $titleDivs.click(function() {
